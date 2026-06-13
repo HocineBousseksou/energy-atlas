@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+# Block API-key patterns from being committed.
+#
+# Patterns covered:
+#   - Google AI Studio / Gemini    : AIza + 35 base64-url chars
+#   - Anthropic                    : sk-ant- + 40+ base64-url chars
+#   - OpenAI / generic 'sk-' keys  : sk- + 40+ alphanum
+#
+# If a real key gets close, move it to .env.local (which is gitignored)
+# and re-stage. .env.example is for placeholders only — never paste a
+# real key there.
+#
+# False positives are rare; if one bites, edit the regex below or
+# stage with --no-verify after confirming the value is safe.
+
+# Get the names of staged files (NUL-delimited, robust against spaces),
+# excluding deletions.
+files=$(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [ -z "$files" ]; then
+  exit 0
+fi
+
+# Search staged files for the patterns.
+# `|| true` is required because husky runs hooks with `sh -e`, and a
+# `grep -l` that finds no matches exits 1 — without this, the hook
+# would abort with a 'script failed (code 1)' error every time the
+# staged files were clean (i.e. on every legitimate commit).
+hits=$(printf '%s' "$files" | xargs -0 grep -l -E \
+  'AIza[0-9A-Za-z_-]{35}|sk-ant-[a-zA-Z0-9_-]{40,}|sk-[a-zA-Z0-9]{40,}' \
+  2>/dev/null || true)
+
+if [ -n "$hits" ]; then
+  echo "──────────────────────────────────────────────────────────"
+  echo "BLOCKED: potential API key detected in staged files."
+  echo ""
+  echo "$hits" | sed 's/^/  • /'
+  echo ""
+  echo "Move the value to .env.local (which is gitignored)."
+  echo "If this is a confirmed false positive, edit .husky/pre-commit"
+  echo "or commit with --no-verify after careful review."
+  echo "──────────────────────────────────────────────────────────"
+  exit 1
+fi
+
+exit 0

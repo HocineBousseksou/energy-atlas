@@ -1,0 +1,203 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────────────────────────────────────────────────
+   Energy Atlas — design tokens (CSS side).
+   The TS source of truth lives at lib/tokens.ts; values here mirror
+   it. Plotly traces import from the TS module directly because they
+   can't resolve var() references at runtime.
+   ─────────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  /* shadcn semantic tokens (mapped to our palette) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* brand-specific (Energy Atlas extensions) */
+  --color-brand: var(--brand);
+  --color-brand-dim: var(--brand-dim);
+  --color-text-subtle: var(--text-subtle);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  /* fonts (loaded by next/font in app/layout.tsx) */
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-heading: var(--font-fraunces), Georgia, serif;
+
+  /* radius scale (kept from shadcn defaults for component consistency) */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   Dark editorial palette — the default and only theme (light path
+   documented in lib/tokens.ts mapStyleFor() for future revival).
+   ─────────────────────────────────────────────────────────────────── */
+:root {
+  /* surface */
+  --background: #0a0a0f;
+  --foreground: #f5f5f7;
+  --bg-panel: #14141a;
+  --bg-elevated: #1c1c24;
+
+  /* shadcn semantics on top of the dark surface */
+  --card: #14141a;
+  --card-foreground: #f5f5f7;
+  --popover: #1c1c24;
+  --popover-foreground: #f5f5f7;
+  --primary: #e85d04;
+  --primary-foreground: #0a0a0f;
+  --secondary: #1c1c24;
+  --secondary-foreground: #f5f5f7;
+  --muted: #1c1c24;
+  --muted-foreground: #8a8a93;
+  --accent: #1c1c24; /* shadcn 'accent' = hover bg, NOT brand */
+  --accent-foreground: #f5f5f7;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.06);
+  --ring: #e85d04; /* focus rings use the brand accent */
+  --radius: 0.75rem;
+
+  /* brand accent + extensions */
+  --brand: #e85d04;
+  --brand-dim: #c53b00;
+  --text-subtle: #5a5a63;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  /* sidebar (kept for shadcn primitives; not heavily used) */
+  --sidebar: #14141a;
+  --sidebar-foreground: #f5f5f7;
+  --sidebar-primary: #e85d04;
+  --sidebar-primary-foreground: #0a0a0f;
+  --sidebar-accent: #1c1c24;
+  --sidebar-accent-foreground: #f5f5f7;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #e85d04;
+}
+
+/* No .dark class needed — body is dark by default. Force scheme so
+   browser UI (form controls, scrollbars) matches. */
+html {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Subtle grain — adds depth without distraction. */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.03 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-attachment: fixed;
+  }
+
+  /* Visible focus ring in brand accent — must stay visible against
+     the dark bg. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Selection in brand accent (with dark text for contrast). */
+  ::selection {
+    background: var(--brand);
+    color: var(--primary-foreground);
+  }
+
+  /* Tabular numerics by default for monospace (KPI values, tables). */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   Reduced-motion: damp Plotly transitions and heavy animations.
+   Framer Motion already respects prefers-reduced-motion via
+   <MotionConfig reducedMotion="user"> in app/layout.tsx; this rule
+   covers raw CSS animations + Plotly's internal CSS transitions.
+   ─────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   Demo Tour highlight — applied transiently (~2 s) by
+   tour-actions.ts:highlightElement to the element matching the
+   data-tour-highlight selector. Brand-glow + scale-up briefly so the
+   user's eye is drawn to the right surface during the corresponding
+   tour step.
+   ─────────────────────────────────────────────────────────────────── */
+.tour-highlight {
+  outline: 2px solid var(--brand);
+  outline-offset: 6px;
+  border-radius: 16px;
+  transition: outline-offset 0.3s ease;
+  animation: tour-pulse 2s ease-out;
+}
+
+@keyframes tour-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(232, 93, 4, 0.0);
+    transform: scale(1);
+  }
+  30% {
+    box-shadow: 0 0 40px 10px rgba(232, 93, 4, 0.30);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 93, 4, 0.0);
+    transform: scale(1);
+  }
+}
